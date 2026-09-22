@@ -1,0 +1,10 @@
+# Never bake real credentials or a local venv into the image. .env is still
+# read at *runtime* by docker-compose (env_file:), just never copied in.
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+*.db
+.git/

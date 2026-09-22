@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Backend runtime artifacts
+Backend/.env
+Backend/*.db
+Backend/tests/*.db
+.pytest_cache/
+.coverage
+
+# OS
+.DS_Store
