@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="description"
+    content="Sign in to Notify."
+  >
+
+  <title>Notify · Sign In</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #134e4a;
+      --text: #172033;
+      --muted-text: #64748b;
+      --surface: #ffffff;
+      --focus-ring: rgb(15 118 110 / 20%);
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background: var(--surface);
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    .login-layout {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.35fr)
+        minmax(420px, 0.95fr);
+      min-height: 100vh;
+    }
+
+    /* Left panel */
+
+    .welcome-panel {
+      position: relative;
+      display: flex;
+      overflow: hidden;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 70px 11%;
+      color: white;
+      background:
+        radial-gradient(
+          circle at 22% 20%,
+          rgb(94 234 212 / 30%),
+          transparent 30%
+        ),
+        linear-gradient(
+          145deg,
+          #115e59 0%,
+          #0f766e 48%,
+          #134e4a 100%
+        );
+    }
+
+    .welcome-panel::before,
+    .welcome-panel::after {
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      content: "";
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 90px;
+      transform: rotate(45deg);
+    }
+
+    .welcome-panel::before {
+      top: 90px;
+      right: -250px;
+    }
+
+    .welcome-panel::after {
+      right: -90px;
+      bottom: -350px;
+    }
+
+    .welcome-content,
+    .copyright {
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-title {
+      max-width: 600px;
+      margin: 150px 0 24px;
+      font-size: clamp(44px, 5vw, 72px);
+      line-height: 1.05;
+      letter-spacing: -0.05em;
+    }
+
+    .welcome-panel p {
+      max-width: 550px;
+      margin: 0;
+      color: #ccfbf1;
+      font-size: 20px;
+      line-height: 1.55;
+    }
+
+    .copyright {
+      color: rgb(204 251 241 / 75%);
+      font-size: 14px;
+    }
+
+    /* Right login panel */
+
+    .form-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      background: white;
+    }
+
+    .login-content {
+      width: 100%;
+      max-width: 430px;
+    }
+
+    .login-content h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      letter-spacing: -0.035em;
+    }
+
+    .login-description {
+      margin: 0 0 34px;
+      color: var(--muted-text);
+      line-height: 1.55;
+    }
+
+
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #334155;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 13px 2px;
+      color: var(--text);
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid #94a3b8;
+      border-radius: 0;
+      font: inherit;
+      outline: none;
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
+      border-bottom-color: var(--primary);
+      box-shadow: 0 2px 0 var(--focus-ring);
+    }
+
+    /* Password visibility control */
+
+    .password-field {
+      position: relative;
+    }
+
+    .password-field input {
+      padding-right: 42px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0;
+      bottom: 7px;
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      color: var(--muted-text);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .password-toggle:hover {
+      color: var(--primary);
+    }
+
+    .password-toggle:focus-visible {
+      color: var(--primary);
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+      border-radius: 5px;
+    }
+
+    .password-toggle svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .eye-closed {
+      display: none;
+    }
+
+    .password-toggle[aria-pressed="true"] .eye-open {
+      display: none;
+    }
+
+    .password-toggle[aria-pressed="true"] .eye-closed {
+      display: block;
+    }
+
+    .sign-in-button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px 18px;
+      color: white;
+      background: var(--primary);
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition:
+        background 0.2s,
+        transform 0.1s;
+    }
+
+    .sign-in-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .sign-in-button:active {
+      transform: translateY(1px);
+    }
+
+    .sign-in-button:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .login-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome-panel {
+        min-height: 340px;
+        padding: 48px 32px;
+      }
+
+      .welcome-title {
+        margin-top: 20px;
+        font-size: 44px;
+      }
+
+      .welcome-panel p {
+        font-size: 17px;
+      }
+
+      .copyright {
+        margin-top: 50px;
+      }
+
+      .form-panel {
+        padding: 50px 24px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .welcome-panel {
+        min-height: 280px;
+      }
+
+      .welcome-title {
+        font-size: 36px;
+      }
+
+      .welcome-panel p {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-layout">
+    <section class="welcome-panel">
+      <div class="welcome-content">
+        <h1 class="welcome-title">
+          Hello,<br>
+          Notify!
+        </h1>
+
+        <p>
+          Send and monitor Email, Slack, and Teams notifications
+          from one simple workspace.
+        </p>
+      </div>
+
+      <div class="copyright">
+        © 2026 Notify. All rights reserved.
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="login-content">
+        <h1>Welcome back!</h1>
+
+ <p class="login-description">
+  Sign in to access your notification dashboard.
+</p>
+
+<form action="dashboard.html" method="get">
+
+
+  </a>
+</p>
+
+    <form action="dashboard.html" method="get">
+          <div class="form-group">
+            <label for="email">Email address</label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+
+            <div class="password-field">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              >
+
+              <button
+                type="button"
+                id="password-toggle"
+                class="password-toggle"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                <svg
+                  class="eye-open"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12"
+                  ></path>
+
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+
+                <svg
+                  class="eye-closed"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M3 3l18 18"></path>
+
+                  <path
+                    d="M10.6 10.6a2 2 0 0 0 2.8 2.8"
+                  ></path>
+
+                  <path
+                    d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.1 3"
+                  ></path>
+
+                  <path
+                    d="M6.6 6.6C3.6 8.4 2 12 2 12s3.5 7 10 7a10 10 0 0 0 4.1-.9"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="sign-in-button">
+            Sign in
+          </button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const passwordInput =
+      document.querySelector("#password");
+
+    const passwordToggle =
+      document.querySelector("#password-toggle");
+
+    passwordToggle.addEventListener("click", () => {
+      const passwordIsVisible =
+        passwordInput.type === "text";
+
+      passwordInput.type =
+        passwordIsVisible ? "password" : "text";
+
+      passwordToggle.setAttribute(
+        "aria-pressed",
+        String(!passwordIsVisible)
+      );
+
+      passwordToggle.setAttribute(
+        "aria-label",
+        passwordIsVisible
+          ? "Show password"
+          : "Hide password"
+      );
+    });
+  </script>
+</body>
+</html>

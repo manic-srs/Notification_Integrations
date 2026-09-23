@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="description"
+    content="View information about notifications."
+  >
+
+  <title>Notify · Dashboard</title>
+
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./Dashboard.css">
+
+  <style>
+    .sidebar-toggle {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .layout > .sidebar {
+      width: 250px;
+      flex: 0 0 250px;
+      min-width: 0;
+      overflow: hidden;
+      transition:
+        width 0.25s ease,
+        flex-basis 0.25s ease,
+        padding 0.25s ease;
+    }
+
+    .layout > main {
+      width: auto;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .sidebar-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .sidebar-heading .sidebar-label {
+      padding: 0;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .sidebar-icon-button {
+      display: inline-flex;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sidebar-icon-button:hover {
+      color: var(--primary-hover);
+    }
+
+    .sidebar-icon-button svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sign-out-button {
+      width: 100%;
+      padding: 10px 12px;
+      color: #b91c1c;
+      background: transparent;
+      border: 1px solid #fecaca;
+      border-radius: 7px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .sign-out-button:hover {
+      color: white;
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
+    #sidebar-toggle:checked ~ .layout > .sidebar {
+      width: 54px;
+      flex-basis: 54px;
+      padding-right: 15px;
+      padding-left: 15px;
+    }
+
+    #sidebar-toggle:checked ~ .layout .sidebar-label,
+    #sidebar-toggle:checked ~ .layout .sidebar-nav,
+    #sidebar-toggle:checked ~ .layout .sidebar-footer {
+      display: none;
+    }
+
+    #sidebar-toggle:checked ~ .layout .sidebar-heading {
+      justify-content: center;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        flex-direction: row;
+      }
+
+      .layout > .sidebar {
+        width: 220px;
+        flex-basis: 220px;
+      }
+
+      #sidebar-toggle:checked ~ .layout > .sidebar {
+        display: flex;
+        width: 54px;
+        flex-basis: 54px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <input
+    type="checkbox"
+    id="sidebar-toggle"
+    class="sidebar-toggle"
+  >
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-heading">
+          <p class="sidebar-label">NOTIFY</p>
+
+          <label
+            for="sidebar-toggle"
+            class="sidebar-icon-button"
+            aria-label="Toggle sidebar"
+            title="Toggle sidebar"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect
+                x="3"
+                y="3"
+                width="18"
+                height="18"
+                rx="2"
+              ></rect>
+
+              <path d="M9 3v18"></path>
+            </svg>
+          </label>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+          <a
+            href="dashboard.html"
+            class="active"
+            aria-current="page"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+
+              <rect
+                x="14"
+                y="3"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+
+              <rect
+                x="3"
+                y="14"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+
+              <rect
+                x="14"
+                y="14"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+            </svg>
+
+            <span>Dashboard</span>
+          </a>
+
+          <a href="notification.html">
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+              ></path>
+
+              <path d="M10 21h4"></path>
+            </svg>
+
+            <span>Send Notification</span>
+          </a>
+
+          <a href="history.html">
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+              <path d="M3 4v5h5"></path>
+              <path d="M12 7v5l3 2"></path>
+            </svg>
+
+            <span>History</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <button
+          type="button"
+          class="sign-out-button"
+          onclick="window.location.href='login.html'"
+        >
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <main>
+      <div class="content">
+        <div class="page-heading">
+          <h1>Notification dashboard</h1>
+
+          <p class="subtitle">
+            Monitor Email, Slack, and Teams notification activity.
+          </p>
+        </div>
+
+        <section class="stats" aria-label="Notification statistics">
+          <article class="statistic statistic-total">
+            <p>Total notifications</p>
+            <h2 id="stat-total">&mdash;</h2>
+          </article>
+
+          <article class="statistic statistic-delivered">
+            <p>Delivered</p>
+            <h2 id="stat-delivered">&mdash;</h2>
+          </article>
+
+          <article class="statistic statistic-pending">
+            <p>Pending</p>
+            <h2 id="stat-pending">&mdash;</h2>
+          </article>
+
+          <article class="statistic statistic-failed">
+            <p>Failed</p>
+            <h2 id="stat-failed">&mdash;</h2>
+          </article>
+        </section>
+
+        <section class="table-card">
+          <div class="table-header">
+            <div>
+              <h2>Recent notifications</h2>
+              <p>Latest notification delivery activity</p>
+            </div>
+
+            <a href="history.html" class="view-all-link">
+              View all
+            </a>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <caption class="visually-hidden">
+                Recent notification activity
+              </caption>
+
+              <thead>
+                <tr>
+                  <th scope="col">Recipient</th>
+                  <th scope="col">Channels</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Created</th>
+                </tr>
+              </thead>
+
+              <tbody id="recent-notifications-body">
+                <tr>
+                  <td colspan="4" class="table-empty">
+                    Loading notifications...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./common.js"></script>
+
+  <script>
+    (function () {
+      const tbody = document.getElementById(
+        "recent-notifications-body"
+      );
+
+      function setStat(id, value) {
+        document.getElementById(id).textContent = value;
+      }
+
+      function renderRows(notifications) {
+        if (notifications.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="table-empty">
+                No notifications yet. Send one from the
+                "Send Notification" page.
+              </td>
+            </tr>
+          `;
+
+          return;
+        }
+
+        tbody.innerHTML = notifications
+          .map((notification) => {
+            const deliveries = notification.deliveries || [];
+
+            const channels = deliveries
+              .map((delivery) => delivery.channel)
+              .join(", ");
+
+            const recipients = deliveries
+              .map((delivery) => delivery.destination)
+              .join(", ");
+
+            const status =
+              NotificationUi.overallStatus(notification);
+
+            const badge = `
+              <span
+                class="status-badge ${NotificationUi.statusClass(status)}"
+              >
+                ${NotificationUi.statusLabel(status)}
+              </span>
+            `;
+
+            return `
+              <tr>
+                <td>
+                  ${NotificationUi.escapeHtml(recipients)}
+                </td>
+
+                <td>
+                  ${NotificationUi.escapeHtml(channels)}
+                </td>
+
+                <td>${badge}</td>
+
+                <td>
+                  ${NotificationUi.formatTime(
+                    notification.created_at
+                  )}
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      async function load() {
+        try {
+          const stats = await NotificationApi.getStats();
+
+          setStat("stat-total", stats.total);
+          setStat("stat-delivered", stats.delivered);
+          setStat("stat-pending", stats.pending);
+          setStat("stat-failed", stats.failed);
+        } catch (error) {
+          [
+            "stat-total",
+            "stat-delivered",
+            "stat-pending",
+            "stat-failed"
+          ].forEach((id) => setStat(id, "?"));
+        }
+
+        try {
+          const result =
+            await NotificationApi.listNotifications({
+              limit: 10
+            });
+
+          renderRows(result.items);
+        } catch (error) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="table-error">
+                ${NotificationUi.escapeHtml(error.message)}
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      load();
+    })();
+  </script>
+</body>
+</html>
