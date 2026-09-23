@@ -33,10 +33,12 @@
     }
 
     .layout > .sidebar {
+      position: relative;
+      z-index: 10;
       width: 250px;
-      flex: 0 0 250px;
       min-width: 0;
-      overflow: hidden;
+      flex: 0 0 250px;
+      overflow: visible;
       transition:
         width 0.25s ease,
         flex-basis 0.25s ease,
@@ -105,42 +107,149 @@
       flex-shrink: 0;
     }
 
-    .sign-out-button {
+    /* Account control */
+
+    .sidebar-footer {
+      position: relative;
+      padding: 20px 0;
+    }
+
+    .account-button {
+      display: flex;
       width: 100%;
-      padding: 10px 12px;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
       overflow: hidden;
-      color: #b91c1c;
+      color: #334155;
       background: transparent;
-      border: 1px solid #fecaca;
-      border-radius: 7px;
+      border: 0;
+      border-radius: 10px;
+      font: inherit;
       font-weight: 600;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      text-align: left;
       cursor: pointer;
     }
 
-    .sign-out-button:hover {
+    .account-button:hover {
+      color: var(--primary);
+      background: #f0fdfa;
+    }
+
+    .account-icon {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      place-items: center;
+      color: white;
+      background: #0f766e;
+      border-radius: 50%;
+    }
+
+    .account-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .account-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Sign-out popup */
+
+    .account-menu {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      left: 0;
+      z-index: 30;
+      padding: 8px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgb(15 23 42 / 18%);
+    }
+
+    .account-menu[hidden] {
+      display: none;
+    }
+
+    .popup-signout-button {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 12px;
+      color: #b91c1c;
+      background: transparent;
+      border: 0;
+      border-radius: 7px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .popup-signout-button:hover {
       color: white;
       background: #b91c1c;
-      border-color: #b91c1c;
     }
+
+    .popup-signout-button svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Collapsed sidebar */
 
     #sidebar-toggle:checked ~ .layout > .sidebar {
       width: 54px;
       flex-basis: 54px;
-      padding-right: 15px;
-      padding-left: 15px;
+      padding-right: 5px;
+      padding-left: 5px;
     }
 
     #sidebar-toggle:checked ~ .layout .sidebar-label,
-    #sidebar-toggle:checked ~ .layout .sidebar-nav,
-    #sidebar-toggle:checked ~ .layout .sidebar-footer {
+    #sidebar-toggle:checked ~ .layout .sidebar-nav {
       display: none;
     }
 
     #sidebar-toggle:checked ~ .layout .sidebar-heading {
       justify-content: center;
       margin-bottom: 0;
+    }
+
+    #sidebar-toggle:checked ~ .layout .account-name {
+      display: none;
+    }
+
+    #sidebar-toggle:checked ~ .layout .sidebar-footer {
+      padding: 20px 0;
+    }
+
+    #sidebar-toggle:checked ~ .layout .account-button {
+      justify-content: center;
+      padding: 5px 0;
+    }
+
+    #sidebar-toggle:checked ~ .layout .account-menu {
+      right: auto;
+      bottom: 0;
+      left: calc(100% + 8px);
+      width: 150px;
     }
 
     @media (max-width: 700px) {
@@ -202,37 +311,10 @@
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
-              <rect
-                x="3"
-                y="3"
-                width="7"
-                height="7"
-                rx="1"
-              ></rect>
-
-              <rect
-                x="14"
-                y="3"
-                width="7"
-                height="7"
-                rx="1"
-              ></rect>
-
-              <rect
-                x="3"
-                y="14"
-                width="7"
-                height="7"
-                rx="1"
-              ></rect>
-
-              <rect
-                x="14"
-                y="14"
-                width="7"
-                height="7"
-                rx="1"
-              ></rect>
+              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
             </svg>
 
             <span>Dashboard</span>
@@ -275,14 +357,48 @@
       </div>
 
       <div class="sidebar-footer">
+        <div
+          id="account-menu"
+          class="account-menu"
+          role="menu"
+          hidden
+        >
+          <button
+            type="button"
+            id="sign-out-button"
+            class="popup-signout-button"
+            role="menuitem"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 17l5-5-5-5"></path>
+              <path d="M15 12H3"></path>
+              <path
+                d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"
+              ></path>
+            </svg>
+
+            <span>Sign out</span>
+          </button>
+        </div>
+
         <button
           type="button"
-          id="sign-out-button"
-          class="sign-out-button"
-          aria-label="Sign out"
-          title="Sign out"
+          id="account-button"
+          class="account-button"
+          aria-label="Open account menu"
+          aria-controls="account-menu"
+          aria-expanded="false"
         >
-          <span id="username-display">Account</span>
+          <span class="account-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21a8 8 0 0 1 16 0"></path>
+            </svg>
+          </span>
+
+          <span id="username-display" class="account-name">
+            Username 
+          </span>
         </button>
       </div>
     </aside>
@@ -370,6 +486,12 @@
   <script src="./common.js"></script>
 
   <script>
+    const accountButton =
+      document.querySelector("#account-button");
+
+    const accountMenu =
+      document.querySelector("#account-menu");
+
     const signOutButton =
       document.querySelector("#sign-out-button");
 
@@ -380,13 +502,48 @@
       localStorage.getItem("notify_username");
 
     usernameDisplay.textContent =
-      savedUsername || "Account";
+      savedUsername || "Username";
+
+    accountButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+
+      const menuIsOpen = !accountMenu.hidden;
+
+      accountMenu.hidden = menuIsOpen;
+
+      accountButton.setAttribute(
+        "aria-expanded",
+        String(!menuIsOpen)
+      );
+    });
 
     signOutButton.addEventListener("click", () => {
       localStorage.removeItem("notify_username");
       localStorage.removeItem("notify_email");
 
       window.location.href = "Login.html";
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".sidebar-footer")) {
+        accountMenu.hidden = true;
+
+        accountButton.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        accountMenu.hidden = true;
+
+        accountButton.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
     });
 
     (function () {
