@@ -109,11 +109,14 @@
     .sign-out-button {
       width: 100%;
       padding: 10px 12px;
+      overflow: hidden;
       color: #b91c1c;
       background: transparent;
       border: 1px solid #fecaca;
       border-radius: 7px;
       font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       cursor: pointer;
     }
 
@@ -275,10 +278,12 @@
       <div class="sidebar-footer">
         <button
           type="button"
+          id="sign-out-button"
           class="sign-out-button"
-          onclick="window.location.href='login.html'"
+          aria-label="Sign out"
+          title="Sign out"
         >
-          Sign out
+          <span id="username-display">Account</span>
         </button>
       </div>
     </aside>
@@ -360,6 +365,25 @@
   <script src="./common.js"></script>
 
   <script>
+    const signOutButton =
+      document.querySelector("#sign-out-button");
+
+    const usernameDisplay =
+      document.querySelector("#username-display");
+
+    const savedUsername =
+      localStorage.getItem("notify_username");
+
+    usernameDisplay.textContent =
+      savedUsername || "Account";
+
+    signOutButton.addEventListener("click", () => {
+      localStorage.removeItem("notify_username");
+      localStorage.removeItem("notify_email");
+
+      window.location.href = "login.html";
+    });
+
     (function () {
       const tbody = document.getElementById(
         "recent-notifications-body"
@@ -385,13 +409,16 @@
 
         tbody.innerHTML = notifications
           .map((notification) => {
-            const deliveries = notification.deliveries || [];
+            const deliveries =
+              notification.deliveries || [];
 
             const channels = deliveries
-            .map((delivery) =>
-            NotificationUi.escapeHtml(delivery.channel)
-           )
-            .join("<br>");
+              .map((delivery) =>
+                NotificationUi.escapeHtml(
+                  delivery.channel
+                )
+              )
+              .join("<br>");
 
             const recipients = deliveries
               .map((delivery) => delivery.destination)
@@ -411,11 +438,11 @@
             return `
               <tr>
                 <td>
-                  ${channels}
+                  ${NotificationUi.escapeHtml(recipients)}
                 </td>
 
                 <td>
-                  ${NotificationUi.escapeHtml(channels)}
+                  ${channels}
                 </td>
 
                 <td>${badge}</td>
@@ -433,7 +460,8 @@
 
       async function load() {
         try {
-          const stats = await NotificationApi.getStats();
+          const stats =
+            await NotificationApi.getStats();
 
           setStat("stat-total", stats.total);
           setStat("stat-delivered", stats.delivered);
