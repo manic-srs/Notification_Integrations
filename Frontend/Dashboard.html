@@ -106,65 +106,17 @@
       stroke-linejoin: round;
     }
 
-    .profile-row {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 4px;
-      margin-bottom: 10px;
-      color: inherit;
-      text-align: left;
-      background: none;
-      border: 0;
-      border-radius: 7px;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    .profile-row:hover {
-      background: #f1f5f9;
-    }
-
-    .profile-icon {
-      display: inline-flex;
-      width: 30px;
-      height: 30px;
-      flex-shrink: 0;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      background: var(--primary);
-      border-radius: 999px;
-    }
-
-    .profile-icon svg {
-      width: 17px;
-      height: 17px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .profile-label {
-      overflow: hidden;
-      color: #334155;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
     .sign-out-button {
       width: 100%;
       padding: 10px 12px;
+      overflow: hidden;
       color: #b91c1c;
       background: transparent;
       border: 1px solid #fecaca;
       border-radius: 7px;
       font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       cursor: pointer;
     }
 
@@ -246,7 +198,7 @@
 
         <nav class="sidebar-nav" aria-label="Main navigation">
           <a
-            href="Dashboard.html"
+            href="dashboard.html"
             class="active"
             aria-current="page"
           >
@@ -291,7 +243,7 @@
             <span>Dashboard</span>
           </a>
 
-          <a href="Notification.html">
+          <a href="notification.html">
             <svg
               class="nav-icon"
               viewBox="0 0 24 24"
@@ -307,7 +259,7 @@
             <span>Send Notification</span>
           </a>
 
-          <a href="History.html">
+          <a href="history.html">
             <svg
               class="nav-icon"
               viewBox="0 0 24 24"
@@ -326,51 +278,14 @@
       <div class="sidebar-footer">
         <button
           type="button"
-          class="profile-row"
-          id="profile-toggle"
-          aria-expanded="false"
-          aria-controls="sign-out-button"
-        >
-          <span class="profile-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path>
-            </svg>
-          </span>
-
-          <span class="profile-label" id="profile-label">Account</span>
-        </button>
-
-        <button
-          type="button"
-          class="sign-out-button"
           id="sign-out-button"
-          hidden
-          onclick="window.localStorage.removeItem('notify_email'); window.location.href='Login.html'"
+          class="sign-out-button"
+          aria-label="Sign out"
+          title="Sign out"
         >
-          Sign out
+          <span id="username-display">Account</span>
         </button>
       </div>
-
-      <script>
-        (function () {
-          var label = document.getElementById("profile-label");
-          try {
-            var email = window.localStorage.getItem("notify_email");
-            if (email) label.textContent = email;
-          } catch (_e) {
-            // localStorage unavailable - keep the "Account" placeholder.
-          }
-
-          var toggle = document.getElementById("profile-toggle");
-          var signOut = document.getElementById("sign-out-button");
-          toggle.addEventListener("click", function () {
-            var expanded = toggle.getAttribute("aria-expanded") === "true";
-            toggle.setAttribute("aria-expanded", String(!expanded));
-            signOut.hidden = expanded;
-          });
-        })();
-      </script>
     </aside>
 
     <main>
@@ -412,7 +327,7 @@
               <p>Latest notification delivery activity</p>
             </div>
 
-            <a href="History.html" class="view-all-link">
+            <a href="history.html" class="view-all-link">
               View all
             </a>
           </div>
@@ -450,6 +365,25 @@
   <script src="./common.js"></script>
 
   <script>
+    const signOutButton =
+      document.querySelector("#sign-out-button");
+
+    const usernameDisplay =
+      document.querySelector("#username-display");
+
+    const savedUsername =
+      localStorage.getItem("notify_username");
+
+    usernameDisplay.textContent =
+      savedUsername || "Account";
+
+    signOutButton.addEventListener("click", () => {
+      localStorage.removeItem("notify_username");
+      localStorage.removeItem("notify_email");
+
+      window.location.href = "login.html";
+    });
+
     (function () {
       const tbody = document.getElementById(
         "recent-notifications-body"
@@ -475,11 +409,16 @@
 
         tbody.innerHTML = notifications
           .map((notification) => {
-            const deliveries = notification.deliveries || [];
+            const deliveries =
+              notification.deliveries || [];
 
             const channels = deliveries
-              .map((delivery) => delivery.channel)
-              .join(", ");
+              .map((delivery) =>
+                NotificationUi.escapeHtml(
+                  delivery.channel
+                )
+              )
+              .join("<br>");
 
             const recipients = deliveries
               .map((delivery) => delivery.destination)
@@ -503,7 +442,7 @@
                 </td>
 
                 <td>
-                  ${NotificationUi.escapeHtml(channels)}
+                  ${channels}
                 </td>
 
                 <td>${badge}</td>
@@ -521,7 +460,8 @@
 
       async function load() {
         try {
-          const stats = await NotificationApi.getStats();
+          const stats =
+            await NotificationApi.getStats();
 
           setStat("stat-total", stats.total);
           setStat("stat-delivered", stats.delivered);

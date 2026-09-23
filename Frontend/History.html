@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
   >
+
   <meta
     name="description"
     content="View and filter notification delivery history."
@@ -103,65 +105,17 @@
       flex-shrink: 0;
     }
 
-    .profile-row {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 4px;
-      margin-bottom: 10px;
-      color: inherit;
-      text-align: left;
-      background: none;
-      border: 0;
-      border-radius: 7px;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    .profile-row:hover {
-      background: #f1f5f9;
-    }
-
-    .profile-icon {
-      display: inline-flex;
-      width: 30px;
-      height: 30px;
-      flex-shrink: 0;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      background: var(--primary);
-      border-radius: 999px;
-    }
-
-    .profile-icon svg {
-      width: 17px;
-      height: 17px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .profile-label {
-      overflow: hidden;
-      color: #334155;
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
     .sign-out-button {
       width: 100%;
       padding: 10px 12px;
+      overflow: hidden;
       color: #b91c1c;
       background: transparent;
       border: 1px solid #fecaca;
       border-radius: 7px;
       font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       cursor: pointer;
     }
 
@@ -235,6 +189,7 @@
                 height="18"
                 rx="2"
               ></rect>
+
               <path d="M9 3v18"></path>
             </svg>
           </label>
@@ -247,10 +202,37 @@
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
-              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
-              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+              <rect
+                x="3"
+                y="3"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+
+              <rect
+                x="14"
+                y="3"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+
+              <rect
+                x="3"
+                y="14"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
+
+              <rect
+                x="14"
+                y="14"
+                width="7"
+                height="7"
+                rx="1"
+              ></rect>
             </svg>
 
             <span>Dashboard</span>
@@ -265,6 +247,7 @@
               <path
                 d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
               ></path>
+
               <path d="M10 21h4"></path>
             </svg>
 
@@ -294,51 +277,14 @@
       <div class="sidebar-footer">
         <button
           type="button"
-          class="profile-row"
-          id="profile-toggle"
-          aria-expanded="false"
-          aria-controls="sign-out-button"
-        >
-          <span class="profile-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path>
-            </svg>
-          </span>
-
-          <span class="profile-label" id="profile-label">Account</span>
-        </button>
-
-        <button
-          type="button"
-          class="sign-out-button"
           id="sign-out-button"
-          hidden
-          onclick="window.localStorage.removeItem('notify_email'); window.location.href='Login.html'"
+          class="sign-out-button"
+          aria-label="Sign out"
+          title="Sign out"
         >
-          Sign out
+          <span id="username-display">Account</span>
         </button>
       </div>
-
-      <script>
-        (function () {
-          var label = document.getElementById("profile-label");
-          try {
-            var email = window.localStorage.getItem("notify_email");
-            if (email) label.textContent = email;
-          } catch (_e) {
-            // localStorage unavailable - keep the "Account" placeholder.
-          }
-
-          var toggle = document.getElementById("profile-toggle");
-          var signOut = document.getElementById("sign-out-button");
-          toggle.addEventListener("click", function () {
-            var expanded = toggle.getAttribute("aria-expanded") === "true";
-            toggle.setAttribute("aria-expanded", String(!expanded));
-            signOut.hidden = expanded;
-          });
-        })();
-      </script>
     </aside>
 
     <main>
@@ -405,7 +351,9 @@
 
             <tbody id="history-records">
               <tr>
-                <td colspan="6" class="table-empty">Loading...</td>
+                <td colspan="6" class="table-empty">
+                  Loading...
+                </td>
               </tr>
             </tbody>
           </table>
@@ -422,83 +370,192 @@
   <script src="./common.js"></script>
 
   <script>
+    const signOutButton =
+      document.querySelector("#sign-out-button");
+
+    const usernameDisplay =
+      document.querySelector("#username-display");
+
+    const savedUsername =
+      localStorage.getItem("notify_username");
+
+    usernameDisplay.textContent =
+      savedUsername || "Account";
+
+    signOutButton.addEventListener("click", () => {
+      localStorage.removeItem("notify_username");
+      localStorage.removeItem("notify_email");
+
+      window.location.href = "Login.html";
+    });
+
     (function () {
-      const tbody = document.querySelector("#history-records");
-      const searchInput = document.querySelector("#history-search");
-      const statusFilter = document.querySelector("#status-filter");
-      const timeFilter = document.querySelector("#time-filter");
-      const emptyState = document.querySelector("#empty-state");
+      const tbody =
+        document.querySelector("#history-records");
+
+      const searchInput =
+        document.querySelector("#history-search");
+
+      const statusFilter =
+        document.querySelector("#status-filter");
+
+      const timeFilter =
+        document.querySelector("#time-filter");
+
+      const emptyState =
+        document.querySelector("#empty-state");
+
       let debounceHandle = null;
-      // Last data fetched from the server - status/time filtering re-render
-      // from this without another round trip; only the search box (a
-      // server-side `q` param) triggers a fresh fetch.
       let lastNotifications = [];
 
-      // The UI's "Delivered" filter should match both SENT and DELIVERED
-      // (the backend only knows the literal status column).
       const FILTER_STATUSES = {
         delivered: ["SENT", "DELIVERED"],
         pending: ["PENDING"],
-        failed: ["FAILED"],
+        failed: ["FAILED"]
       };
 
       const TIME_WINDOW_MS = {
         today: 24 * 60 * 60 * 1000,
         week: 7 * 24 * 60 * 60 * 1000,
-        month: 30 * 24 * 60 * 60 * 1000,
+        month: 30 * 24 * 60 * 60 * 1000
       };
 
       function withinTimeFilter(isoString) {
-        const windowMs = TIME_WINDOW_MS[timeFilter.value];
-        if (!windowMs) return true;
-        const hasTimezone = /Z$|[+-]\d{2}:?\d{2}$/.test(isoString || "");
-        const created = new Date(hasTimezone ? isoString : (isoString || "") + "Z");
-        if (Number.isNaN(created.getTime())) return true;
+        const windowMs =
+          TIME_WINDOW_MS[timeFilter.value];
+
+        if (!windowMs) {
+          return true;
+        }
+
+        const hasTimezone =
+          /Z$|[+-]\d{2}:?\d{2}$/.test(isoString || "");
+
+        const created = new Date(
+          hasTimezone
+            ? isoString
+            : (isoString || "") + "Z"
+        );
+
+        if (Number.isNaN(created.getTime())) {
+          return true;
+        }
+
         return Date.now() - created.getTime() <= windowMs;
       }
 
       function renderRows(notifications) {
         const selectedStatus = statusFilter.value;
-        const allowedStatuses = FILTER_STATUSES[selectedStatus];
+
+        const allowedStatuses =
+          FILTER_STATUSES[selectedStatus];
 
         const rows = [];
+
         notifications.forEach((notification) => {
-          const shortId = notification.id.slice(0, 8);
-          (notification.deliveries || []).forEach((delivery) => {
-            if (allowedStatuses && !allowedStatuses.includes((delivery.status || "").toUpperCase())) return;
-            if (!withinTimeFilter(delivery.created_at)) return;
-            rows.push(`<tr>
-              <td class="notification-id">${NotificationUi.escapeHtml(shortId)}</td>
-              <td>${NotificationUi.escapeHtml(delivery.channel)}</td>
-              <td>${NotificationUi.escapeHtml(delivery.destination)}</td>
-              <td>
-                <span class="status ${NotificationUi.statusClass(delivery.status)}">
-                  ${NotificationUi.statusLabel(delivery.status)}
-                </span>
-              </td>
-              <td>${delivery.retry_count + 1}</td>
-              <td>${NotificationUi.formatTime(delivery.created_at)}</td>
-            </tr>`);
-          });
+          const shortId =
+            notification.id.slice(0, 8);
+
+          (notification.deliveries || []).forEach(
+            (delivery) => {
+              const deliveryStatus =
+                (delivery.status || "").toUpperCase();
+
+              if (
+                allowedStatuses &&
+                !allowedStatuses.includes(deliveryStatus)
+              ) {
+                return;
+              }
+
+              if (!withinTimeFilter(delivery.created_at)) {
+                return;
+              }
+
+              rows.push(`
+                <tr>
+                  <td class="notification-id">
+                    ${NotificationUi.escapeHtml(shortId)}
+                  </td>
+
+                  <td>
+                    ${NotificationUi.escapeHtml(
+                      delivery.channel
+                    )}
+                  </td>
+
+                  <td>
+                    ${NotificationUi.escapeHtml(
+                      delivery.destination
+                    )}
+                  </td>
+
+                  <td>
+                    <span
+                      class="status ${NotificationUi.statusClass(
+                        delivery.status
+                      )}"
+                    >
+                      ${NotificationUi.statusLabel(
+                        delivery.status
+                      )}
+                    </span>
+                  </td>
+
+                  <td>
+                    ${delivery.retry_count + 1}
+                  </td>
+
+                  <td>
+                    ${NotificationUi.formatTime(
+                      delivery.created_at
+                    )}
+                  </td>
+                </tr>
+              `);
+            }
+          );
         });
 
-        tbody.innerHTML = rows.length
-          ? rows.join("")
-          : "";
-        emptyState.classList.toggle("visible", rows.length === 0);
+        tbody.innerHTML =
+          rows.length ? rows.join("") : "";
+
+        emptyState.classList.toggle(
+          "visible",
+          rows.length === 0
+        );
       }
 
       async function load() {
-        const params = { q: searchInput.value.trim() || undefined, limit: 100 };
+        const params = {
+          q: searchInput.value.trim() || undefined,
+          limit: 100
+        };
 
-        tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Loading...</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="table-empty">
+              Loading...
+            </td>
+          </tr>
+        `;
+
         emptyState.classList.remove("visible");
+
         try {
-          const result = await NotificationApi.listNotifications(params);
+          const result =
+            await NotificationApi.listNotifications(params);
+
           lastNotifications = result.items;
           renderRows(lastNotifications);
         } catch (error) {
-          tbody.innerHTML = `<tr><td colspan="6" class="table-error">${NotificationUi.escapeHtml(error.message)}</td></tr>`;
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="table-error">
+                ${NotificationUi.escapeHtml(error.message)}
+              </td>
+            </tr>
+          `;
         }
       }
 
@@ -506,8 +563,14 @@
         clearTimeout(debounceHandle);
         debounceHandle = setTimeout(load, 300);
       });
-      statusFilter.addEventListener("change", () => renderRows(lastNotifications));
-      timeFilter.addEventListener("change", () => renderRows(lastNotifications));
+
+      statusFilter.addEventListener("change", () => {
+        renderRows(lastNotifications);
+      });
+
+      timeFilter.addEventListener("change", () => {
+        renderRows(lastNotifications);
+      });
 
       load();
     })();
