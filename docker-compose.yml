@@ -1,6 +1,7 @@
-# One-command local stack: MySQL + Backend (FastAPI). Equivalent to the two
-# manual steps in README.md (start MySQL, `uvicorn main:app --reload --port
-# 8000`), just run together with `docker compose up`.
+# One-command local stack: MySQL + Backend (FastAPI) + Frontend (static
+# HTML/JS via nginx). Equivalent to the three manual steps in README.md
+# (start MySQL, `uvicorn main:app --reload --port 8000`, and serving
+# Frontend/ some other way), just run together with `docker compose up`.
 #
 # Quick start:
 #   1. Make sure Backend/.env exists (`cp Backend/.env.example Backend/.env`)
@@ -14,12 +15,13 @@
 #      MYSQL_ROOT_PASSWORD=... and/or BACKEND_PORT=8001 - default password
 #      is "rootpass", default port is 8000.
 #   3. docker compose up --build
-#   4. Backend docs: http://localhost:8000/docs (or your BACKEND_PORT)
+#   4. Frontend: http://localhost:5500 (or your FRONTEND_PORT)
+#      Backend docs: http://localhost:8000/docs (or your BACKEND_PORT)
 #
 # This MySQL is a fresh, empty database living in its own Docker volume -
 # separate from any MySQL you already run natively on your machine.
 #
-# Networking note: the backend reaches MySQL by a FIXED IP (172.28.0.10)
+# Networking note: the backend reaches MySQL by a FIXED IP (172.29.0.10)
 # on a dedicated network below, not by the Docker DNS name "mysql". This
 # works around a Docker Desktop for Mac bug where the embedded DNS
 # resolver can persistently fail to resolve service names for a
@@ -38,7 +40,7 @@ services:
       # Host 3307, not 3306 - avoids clashing with a native MySQL already
       # running on the host (e.g. the one you use outside Docker). The
       # backend container always reaches this over the internal Docker
-      # network at 172.28.0.10:3306 regardless - this mapping is only for
+      # network at 172.29.0.10:3306 regardless - this mapping is only for
       # connecting a MySQL client directly from your machine if you want to.
       - "3307:3306"
     volumes:
@@ -50,7 +52,7 @@ services:
       retries: 15
     networks:
       notif_net:
-        ipv4_address: 172.28.0.10
+        ipv4_address: 172.29.0.10
 
   backend:
     build: ./Backend
@@ -65,7 +67,7 @@ services:
       # regardless of whatever MYSQL_* values happen to be sitting in
       # Backend/.env from running this natively - keeps the two ways of
       # running it from conflicting.
-      MYSQL_HOST: 172.28.0.10
+      MYSQL_HOST: 172.29.0.10
       MYSQL_PORT: 3306
       MYSQL_USER: root
       MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
@@ -85,6 +87,18 @@ services:
     networks:
       - notif_net
 
+  frontend:
+    build: ./Frontend
+    restart: unless-stopped
+    ports:
+      # Configurable via FRONTEND_PORT in case 5500 is already taken by
+      # something else on your machine - defaults to 5500.
+      - "${FRONTEND_PORT:-5500}:80"
+    depends_on:
+      - backend
+    networks:
+      - notif_net
+
 volumes:
   mysql_data:
 
@@ -93,4 +107,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.28.0.0/16
+        - subnet: 172.29.0.0/16

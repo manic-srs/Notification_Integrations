@@ -349,13 +349,7 @@
   Sign in to access your notification dashboard.
 </p>
 
-<form action="dashboard.html" method="get">
-
-
-  </a>
-</p>
-
-    <form action="dashboard.html" method="get">
+    <form id="login-form" action="Dashboard.html" method="get">
           <div class="form-group">
             <label for="email">Email address</label>
 
@@ -433,6 +427,22 @@
   </div>
 
   <script>
+    // Remember the signed-in email (no real auth backend - this is a
+    // client-side placeholder) so the other pages can show it in the
+    // profile menu, instead of carrying email/password in the URL via a
+    // plain GET form submit.
+    document.getElementById("login-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      try {
+        if (email) window.localStorage.setItem("notify_email", email);
+      } catch (_e) {
+        // localStorage unavailable (private browsing, etc.) - fall
+        // through and navigate anyway.
+      }
+      window.location.href = "Dashboard.html";
+    });
+
     const passwordInput =
       document.querySelector("#password");
 

@@ -9,10 +9,11 @@
 .search-panel,
 .search-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
-  margin: 28px 0 22px;
+  gap: 16px;
+  padding: 18px 20px;
+  margin: 28px 0 24px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -46,7 +47,7 @@
 
 .search-panel select,
 .search-bar select {
-  min-width: 160px;
+  min-width: 150px;
   color: #334155;
   font-weight: 500;
   cursor: pointer;

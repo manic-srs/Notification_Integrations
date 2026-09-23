@@ -1,17 +1,13 @@
-# Notification Integration — Backend
+# Notification Integration
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1)
 
-The backend for a Notification Management Application that lets a user send
-a message across **Teams, Email and Slack** from one request, tracks
-delivery status per channel, retries failures, and accepts
-delivery-confirmation callbacks via a webhook.
-
-> **Status:** this repo currently contains the **backend service only**. The
-> frontend (static HTML/CSS/JS) is being built separately by a teammate and
-> will be added alongside it.
+A Notification Management Application that lets a user send a message
+across **Teams, Email and Slack** from one form, tracks delivery status
+per channel, retries failures, and accepts delivery-confirmation
+callbacks via a webhook.
 
 Built to the "Notification Management Application (Teams • Email • Slack)"
 spec: FastAPI + MySQL (no ORM — raw SQL via PyMySQL), with a provider-adapter
@@ -28,7 +24,7 @@ layer so the service never talks to a vendor SDK directly.
 - [Running the backend without Docker](#running-the-backend-without-docker)
 - [Database setup](#database--mysql-only-no-orm)
 - [Provider credentials](#provider-credentials-all-optional--mock-is-the-default)
-- [Trying it out without a frontend](#trying-it-out-without-a-frontend)
+- [Trying it out via the API directly](#trying-it-out-via-the-api-directly)
 - [API summary](#api-summary)
 - [Design notes](#design-notes)
 - [Tests](#tests)
@@ -71,26 +67,36 @@ Client (frontend / API caller)  --fetch-->  FastAPI API layer  -->  Notification
 
 ```
 Notification_Integration/
-├── docker-compose.yml            # one-command stack: MySQL + Backend
-└── Backend/
-    ├── main.py                  # FastAPI entrypoint (CORS, DB init, router)
-    ├── requirements.txt
-    ├── .env.example             # copy to .env and fill in real credentials
-    ├── Dockerfile
-    ├── .dockerignore
-    ├── schema.sql                # raw MySQL DDL - the single source of truth for the schema
-    ├── app/
-    │   ├── config.py             # Settings (env-driven)
-    │   ├── db.py                 # PyMySQL connection management (no ORM)
-    │   ├── security.py           # webhook secret comparison, redaction
-    │   ├── schemas.py            # Pydantic request/response models
-    │   ├── models/                # plain dataclasses (Notification, NotificationDelivery)
-    │   ├── repositories/          # the only place raw SQL is written
-    │   ├── providers/             # Teams / Slack / Email adapters + Mock + factory
-    │   ├── services/               # NotificationService, retry policy
-    │   ├── webhooks/                # provider callback normalization
-    │   └── api/                     # FastAPI routes
-    └── tests/                        # pytest suite (offline, MockProvider only)
+├── docker-compose.yml            # one-command stack: MySQL + Backend + Frontend
+├── Backend/
+│   ├── main.py                  # FastAPI entrypoint (CORS, DB init, router)
+│   ├── requirements.txt
+│   ├── .env.example             # copy to .env and fill in real credentials
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── schema.sql                # raw MySQL DDL - the single source of truth for the schema
+│   ├── app/
+│   │   ├── config.py             # Settings (env-driven)
+│   │   ├── db.py                 # PyMySQL connection management (no ORM)
+│   │   ├── security.py           # webhook secret comparison, redaction
+│   │   ├── schemas.py            # Pydantic request/response models
+│   │   ├── models/                # plain dataclasses (Notification, NotificationDelivery)
+│   │   ├── repositories/          # the only place raw SQL is written
+│   │   ├── providers/             # Teams / Slack / Email adapters + Mock + factory
+│   │   ├── services/               # NotificationService, retry policy
+│   │   ├── webhooks/                # provider callback normalization
+│   │   └── api/                     # FastAPI routes
+│   └── tests/                        # pytest suite (offline, MockProvider only)
+└── Frontend/
+    ├── Dockerfile                    # static HTML/CSS/JS served by nginx, no build step
+    ├── Login.html                    # sign-in screen (client-side only, no backend call)
+    ├── Dashboard.html                # stats + recent notifications
+    ├── Notification.html             # send-notification form
+    ├── History.html                  # search/filter notification history
+    ├── config.js                     # API_BASE_URL
+    ├── common.js                     # shared fetch helpers used by Dashboard/Notification
+    ├── send-notification.js          # Notification.html's form logic
+    └── *.css                          # per-page styles + shared styles.css
 ```
 
 ## Prerequisites
@@ -252,10 +258,10 @@ Channel slack  -> real provider
 Channel email  -> real provider
 ```
 
-### Trying it out without a frontend
+### Trying it out via the API directly
 
-No UI is needed to exercise the API — use the interactive Swagger docs at
-`http://localhost:8000/docs`, or `curl`:
+You can exercise the API without the frontend too, via the interactive
+Swagger docs at `http://localhost:8000/docs`, or `curl`:
 
 ```bash
 curl -X POST http://localhost:8000/api/notifications \
@@ -286,9 +292,8 @@ and returns a successful delivery status immediately.
 | POST | `/api/webhooks/{provider}` | delivery-confirmation callback (`X-Webhook-Secret` header required); idempotent |
 | GET | `/api/stats` | total/pending/delivered/failed counts (for a dashboard) |
 
-CORS is controlled by `CORS_ORIGINS` in `.env` (`*` by default) — once the
-frontend is added, point it at this backend's base URL and set
-`CORS_ORIGINS` to that origin for production use.
+CORS is controlled by `CORS_ORIGINS` in `.env` (`*` by default) — for
+production use, point it at the frontend's actual origin instead of `*`.
 
 ## Design notes
 
@@ -364,7 +369,7 @@ threading (`tests/test_threading.py`), all against a real MySQL schema.
 | `pip install` fails with a permissions error | Make sure the virtual environment is activated (prompt should show `(.venv)`) before running `pip install`. |
 | PowerShell: *"cannot be loaded because running scripts is disabled"* | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in that terminal, then retry activation. |
 | `uvicorn` can't connect to MySQL | Confirm the MySQL service is running (`brew services list` on macOS, `Get-Service MySQL80` on Windows) and that `MYSQL_PASSWORD` in `.env` matches what you set during MySQL install. |
-| Frontend (once added) gets CORS errors calling this API | Set `CORS_ORIGINS` in `Backend/.env` to the frontend's actual origin (or `*` for local development). |
+| Frontend gets CORS errors calling this API | Set `CORS_ORIGINS` in `Backend/.env` to the frontend's actual origin (or `*` for local development). |
 | Docker: backend can't reach MySQL | Make sure `docker compose up` finished the MySQL healthcheck before the backend started (compose handles this via `depends_on: condition: service_healthy`) — check with `docker compose logs mysql`. |
 | Docker: `Bind for 0.0.0.0:8000 failed: port is already allocated` | Something else on your machine already has port 8000 (check with `docker ps` or `lsof -i :8000`). Set `BACKEND_PORT=8001` (or any free port) in a `.env` file next to `docker-compose.yml` rather than fighting over 8000. |
 

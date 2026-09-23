@@ -13,3 +13,7 @@ Backend/tests/*.db
 
 # OS
 .DS_Store
+
+# Local port/password overrides for docker-compose.yml - machine-specific,
+# not meant to be shared (see docker-compose.yml's own comments).
+.env

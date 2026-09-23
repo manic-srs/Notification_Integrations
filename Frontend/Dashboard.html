@@ -106,6 +106,57 @@
       stroke-linejoin: round;
     }
 
+    .profile-row {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 4px;
+      margin-bottom: 10px;
+      color: inherit;
+      text-align: left;
+      background: none;
+      border: 0;
+      border-radius: 7px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .profile-row:hover {
+      background: #f1f5f9;
+    }
+
+    .profile-icon {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .profile-icon svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .profile-label {
+      overflow: hidden;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
     .sign-out-button {
       width: 100%;
       padding: 10px 12px;
@@ -195,7 +246,7 @@
 
         <nav class="sidebar-nav" aria-label="Main navigation">
           <a
-            href="dashboard.html"
+            href="Dashboard.html"
             class="active"
             aria-current="page"
           >
@@ -240,7 +291,7 @@
             <span>Dashboard</span>
           </a>
 
-          <a href="notification.html">
+          <a href="Notification.html">
             <svg
               class="nav-icon"
               viewBox="0 0 24 24"
@@ -256,7 +307,7 @@
             <span>Send Notification</span>
           </a>
 
-          <a href="history.html">
+          <a href="History.html">
             <svg
               class="nav-icon"
               viewBox="0 0 24 24"
@@ -275,12 +326,51 @@
       <div class="sidebar-footer">
         <button
           type="button"
+          class="profile-row"
+          id="profile-toggle"
+          aria-expanded="false"
+          aria-controls="sign-out-button"
+        >
+          <span class="profile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path>
+            </svg>
+          </span>
+
+          <span class="profile-label" id="profile-label">Account</span>
+        </button>
+
+        <button
+          type="button"
           class="sign-out-button"
-          onclick="window.location.href='login.html'"
+          id="sign-out-button"
+          hidden
+          onclick="window.localStorage.removeItem('notify_email'); window.location.href='Login.html'"
         >
           Sign out
         </button>
       </div>
+
+      <script>
+        (function () {
+          var label = document.getElementById("profile-label");
+          try {
+            var email = window.localStorage.getItem("notify_email");
+            if (email) label.textContent = email;
+          } catch (_e) {
+            // localStorage unavailable - keep the "Account" placeholder.
+          }
+
+          var toggle = document.getElementById("profile-toggle");
+          var signOut = document.getElementById("sign-out-button");
+          toggle.addEventListener("click", function () {
+            var expanded = toggle.getAttribute("aria-expanded") === "true";
+            toggle.setAttribute("aria-expanded", String(!expanded));
+            signOut.hidden = expanded;
+          });
+        })();
+      </script>
     </aside>
 
     <main>
@@ -322,7 +412,7 @@
               <p>Latest notification delivery activity</p>
             </div>
 
-            <a href="history.html" class="view-all-link">
+            <a href="History.html" class="view-all-link">
               View all
             </a>
           </div>
