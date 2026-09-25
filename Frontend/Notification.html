@@ -19,6 +19,20 @@
   <link rel="stylesheet" href="./Notification.css">
 
   <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
     .sidebar-toggle {
       position: absolute;
       width: 1px;
@@ -27,29 +41,50 @@
       pointer-events: none;
     }
 
+    /* Page layout */
+
     .layout {
       display: flex;
-      min-height: 100vh;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
     }
+
+    /* Stationary sidebar */
 
     .layout > .sidebar {
       position: relative;
       z-index: 10;
+      display: flex;
       width: 250px;
+      height: 100vh;
+      height: 100dvh;
       min-width: 0;
       flex: 0 0 250px;
+      flex-direction: column;
       overflow: visible;
+      background: white;
+      border-right: 1px solid #e2e8f0;
       transition:
         width 0.25s ease,
         flex-basis 0.25s ease,
         padding 0.25s ease;
     }
 
+    /* Only the main content scrolls */
+
     .layout > main {
       width: auto;
+      height: 100vh;
+      height: 100dvh;
       min-width: 0;
       flex: 1;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
+
+    /* Sidebar heading */
 
     .sidebar-heading {
       display: flex;
@@ -95,6 +130,8 @@
       height: 18px;
     }
 
+    /* Sidebar navigation */
+
     .sidebar-nav a {
       display: flex;
       align-items: center;
@@ -107,11 +144,13 @@
       flex-shrink: 0;
     }
 
-    /* Account control */
+    /* Username section */
 
     .sidebar-footer {
       position: relative;
-      padding: 20px 0;
+      margin-top: auto;
+      margin-bottom: 24px;
+      padding: 16px 0;
     }
 
     .account-button {
@@ -237,7 +276,7 @@
     }
 
     #sidebar-toggle:checked ~ .layout .sidebar-footer {
-      padding: 20px 0;
+      padding: 16px 0;
     }
 
     #sidebar-toggle:checked ~ .layout .account-button {
@@ -253,17 +292,12 @@
     }
 
     @media (max-width: 700px) {
-      .layout {
-        flex-direction: row;
-      }
-
       .layout > .sidebar {
         width: 220px;
         flex-basis: 220px;
       }
 
       #sidebar-toggle:checked ~ .layout > .sidebar {
-        display: flex;
         width: 54px;
         flex-basis: 54px;
       }
@@ -298,7 +332,6 @@
                 height="18"
                 rx="2"
               ></rect>
-
               <path d="M9 3v18"></path>
             </svg>
           </label>
@@ -333,7 +366,6 @@
               <path
                 d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
               ></path>
-
               <path d="M10 21h4"></path>
             </svg>
 
@@ -397,7 +429,7 @@
           </span>
 
           <span id="username-display" class="account-name">
-            Username 
+            Username
           </span>
         </button>
       </div>
@@ -456,7 +488,6 @@
                   value="teams"
                   data-channel-toggle="teams"
                 >
-
                 <span>Teams</span>
               </label>
 
@@ -467,7 +498,6 @@
                   value="email"
                   data-channel-toggle="email"
                 >
-
                 <span>Email</span>
               </label>
 
@@ -478,7 +508,6 @@
                   value="slack"
                   data-channel-toggle="slack"
                 >
-
                 <span>Slack</span>
               </label>
             </div>
