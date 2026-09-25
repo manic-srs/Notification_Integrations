@@ -19,6 +19,14 @@
   <link rel="stylesheet" href="./History.css">
 
   <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
     .sidebar-toggle {
       position: absolute;
       width: 1px;
@@ -29,16 +37,24 @@
 
     .layout {
       display: flex;
-      min-height: 100vh;
+      width: 100%;
+      height: 100vh;
+      min-height: 0;
     }
 
     .layout > .sidebar {
       position: relative;
       z-index: 10;
+      display: flex;
+      box-sizing: border-box;
       width: 250px;
+      height: 100vh;
       min-width: 0;
       flex: 0 0 250px;
+      flex-direction: column;
       overflow: visible;
+      background: white;
+      border-right: 1px solid #e2e8f0;
       transition:
         width 0.25s ease,
         flex-basis 0.25s ease,
@@ -47,8 +63,11 @@
 
     .layout > main {
       width: auto;
+      height: 100vh;
       min-width: 0;
       flex: 1;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .sidebar-heading {
@@ -111,7 +130,9 @@
 
     .sidebar-footer {
       position: relative;
-      padding: 20px 0;
+      margin-top: auto;
+      margin-bottom: 30px;
+      padding: 16px 0;
     }
 
     .account-button {
@@ -237,7 +258,7 @@
     }
 
     #sidebar-toggle:checked ~ .layout .sidebar-footer {
-      padding: 20px 0;
+      padding: 16px 0;
     }
 
     #sidebar-toggle:checked ~ .layout .account-button {
@@ -397,7 +418,7 @@
           </span>
 
           <span id="username-display" class="account-name">
-            Username 
+            Username
           </span>
         </button>
       </div>

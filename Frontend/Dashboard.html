@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
@@ -19,6 +20,14 @@
   <link rel="stylesheet" href="./Dashboard.css">
 
   <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
     .sidebar-toggle {
       position: absolute;
       width: 1px;
@@ -29,16 +38,24 @@
 
     .layout {
       display: flex;
-      min-height: 100vh;
+      width: 100%;
+      height: 100vh;
+      min-height: 0;
     }
 
     .layout > .sidebar {
       position: relative;
       z-index: 10;
+      display: flex;
+      box-sizing: border-box;
       width: 250px;
+      height: 100vh;
       min-width: 0;
       flex: 0 0 250px;
+      flex-direction: column;
       overflow: visible;
+      background: white;
+      border-right: 1px solid #e2e8f0;
       transition:
         width 0.25s ease,
         flex-basis 0.25s ease,
@@ -47,8 +64,10 @@
 
     .layout > main {
       width: auto;
+      height: 100vh;
       min-width: 0;
       flex: 1;
+      overflow: hidden;
     }
 
     .sidebar-heading {
@@ -112,7 +131,9 @@
 
     .sidebar-footer {
       position: relative;
-      padding: 20px 0;
+      margin-top: auto;
+      margin-bottom: 30px;
+      padding: 16px 0;
     }
 
     .account-button {
@@ -164,7 +185,7 @@
       white-space: nowrap;
     }
 
-    /* Sign-out popup menu */
+    /* Sign-out popup */
 
     .account-menu {
       position: absolute;
@@ -238,7 +259,7 @@
     }
 
     #sidebar-toggle:checked ~ .layout .sidebar-footer {
-      padding: 20px 0;
+      padding: 16px 0;
     }
 
     #sidebar-toggle:checked ~ .layout .account-button {
@@ -273,6 +294,7 @@
 </head>
 
 <body>
+
   <input
     type="checkbox"
     id="sidebar-toggle"
@@ -280,9 +302,12 @@
   >
 
   <div class="layout">
+
     <aside class="sidebar">
+
       <div>
         <div class="sidebar-heading">
+
           <p class="sidebar-label">NOTIFY</p>
 
           <label
@@ -306,6 +331,7 @@
         </div>
 
         <nav class="sidebar-nav" aria-label="Main navigation">
+
           <a
             href="Dashboard.html"
             class="active"
@@ -354,10 +380,12 @@
 
             <span>History</span>
           </a>
+
         </nav>
       </div>
 
       <div class="sidebar-footer">
+
         <div
           id="account-menu"
           class="account-menu"
@@ -398,14 +426,16 @@
           </span>
 
           <span id="username-display" class="account-name">
-            Username 
+            Username
           </span>
         </button>
+
       </div>
     </aside>
 
     <main>
       <div class="content">
+
         <div class="page-heading">
           <h1>Notification dashboard</h1>
 
@@ -418,6 +448,7 @@
           class="stats"
           aria-label="Notification statistics"
         >
+
           <article class="statistic statistic-total">
             <p>Total notifications</p>
             <h2 id="stat-total">&mdash;</h2>
@@ -437,10 +468,13 @@
             <p>Failed</p>
             <h2 id="stat-failed">&mdash;</h2>
           </article>
+
         </section>
 
         <section class="table-card">
+
           <div class="table-header">
+
             <div>
               <h2>Recent notifications</h2>
               <p>Latest notification delivery activity</p>
@@ -449,10 +483,13 @@
             <a href="History.html" class="view-all-link">
               View all
             </a>
+
           </div>
 
           <div class="table-container">
+
             <table>
+
               <caption class="visually-hidden">
                 Recent notification activity
               </caption>
@@ -473,11 +510,15 @@
                   </td>
                 </tr>
               </tbody>
+
             </table>
+
           </div>
         </section>
+
       </div>
     </main>
+
   </div>
 
   <script src="./config.js"></script>
@@ -545,6 +586,7 @@
     });
 
     (function () {
+
       const tbody = document.getElementById(
         "recent-notifications-body"
       );
@@ -554,6 +596,7 @@
       }
 
       function renderRows(notifications) {
+
         if (notifications.length === 0) {
           tbody.innerHTML = `
             <tr>
@@ -569,6 +612,7 @@
 
         tbody.innerHTML = notifications
           .map((notification) => {
+
             const deliveries =
               notification.deliveries || [];
 
@@ -581,8 +625,12 @@
               .join("<br>");
 
             const recipients = deliveries
-              .map((delivery) => delivery.destination)
-              .join(", ");
+              .map((delivery) =>
+                NotificationUi.escapeHtml(
+                  delivery.destination
+                )
+              )
+              .join("<br>");
 
             const status =
               NotificationUi.overallStatus(notification);
@@ -597,12 +645,8 @@
 
             return `
               <tr>
-                <td>
-                  ${NotificationUi.escapeHtml(recipients)}
-                </td>
-
+                <td>${recipients}</td>
                 <td>${channels}</td>
-
                 <td>${badge}</td>
 
                 <td>
@@ -617,6 +661,7 @@
       }
 
       async function load() {
+
         try {
           const stats =
             await NotificationApi.getStats();
@@ -625,7 +670,9 @@
           setStat("stat-delivered", stats.delivered);
           setStat("stat-pending", stats.pending);
           setStat("stat-failed", stats.failed);
+
         } catch (error) {
+
           [
             "stat-total",
             "stat-delivered",
@@ -641,7 +688,9 @@
             });
 
           renderRows(result.items);
+
         } catch (error) {
+
           tbody.innerHTML = `
             <tr>
               <td colspan="4" class="table-error">
@@ -653,7 +702,9 @@
       }
 
       load();
+
     })();
   </script>
+
 </body>
 </html>
