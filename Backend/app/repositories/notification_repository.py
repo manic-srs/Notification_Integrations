@@ -202,27 +202,37 @@ def update_delivery_status(
 
 
 def get_thread_key(db: Database, channel: str, destination: str) -> str | None:
-    """The existing thread anchor for this (channel, destination), if any
-    prior notification to this recipient already established one."""
+    """The existing thread anchor for this (channel, destination), if it
+    was established earlier *today*. Notifications from a previous day are
+    deliberately NOT reused as a thread anchor - replying into a days-old
+    thread makes new notifications easy to miss (they show up as a buried
+    reply instead of a new message), so each new day starts a fresh
+    top-level message instead. Same-day notifications still group into one
+    running thread, per the original design."""
     cursor = db.execute(
-        "SELECT thread_key FROM channel_threads WHERE channel = %s AND destination = %s",
+        "SELECT thread_key, created_at FROM channel_threads WHERE channel = %s AND destination = %s",
         (channel, destination),
     )
     row = cursor.fetchone()
-    return row["thread_key"] if row else None
+    if not row:
+        return None
+    if row["created_at"].date() != _now().date():
+        return None
+    return row["thread_key"]
 
 
 def save_thread_key(db: Database, channel: str, destination: str, thread_key: str) -> None:
-    """Records the thread anchor the *first* time we see one for this
-    (channel, destination) and leaves it alone after that - every later
-    notification to the same recipient should keep replying into the same
-    original thread, not restart it, so a second call with a different
-    value is a deliberate no-op via ON DUPLICATE KEY UPDATE."""
+    """Records/refreshes today's thread anchor for this (channel,
+    destination). Overwriting thread_key and created_at on every call (not
+    just the first) is what lets get_thread_key() correctly start a new
+    thread once the stored created_at rolls over to a new day - a repeat
+    call within the same day just rewrites the same values, which is a
+    harmless no-op in practice."""
     db.execute(
         """
         INSERT INTO channel_threads (channel, destination, thread_key, created_at)
         VALUES (%s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE thread_key = thread_key
+        ON DUPLICATE KEY UPDATE thread_key = VALUES(thread_key), created_at = VALUES(created_at)
         """,
         (channel, destination, thread_key, _now()),
     )

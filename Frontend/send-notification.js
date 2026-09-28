@@ -29,6 +29,20 @@
     return { title, message, channels: buildChannelsPayload() };
   }
 
+  // A destination field can hold several recipients separated by commas
+  // (e.g. "ops-channel, release-channel"). Splitting them into separate
+  // entries here means each recipient gets its own delivery row and its
+  // own real success/failure status from the provider, instead of the
+  // whole comma-separated string being sent as one destination (which
+  // used to come back as a false "Delivered" even though nothing but the
+  // first recipient - or nobody at all - actually received it).
+  function splitDestinations(rawValue) {
+    return String(rawValue || "")
+      .split(",")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
+  }
+
   function buildChannelsPayload() {
     const channels = {};
 
@@ -37,19 +51,20 @@
     const slackChecked = document.querySelector('[data-channel-toggle="slack"]').checked;
 
     if (teamsChecked) {
-      const destination = document.getElementById("teams-destination").value.trim();
-      if (!destination) throw new Error("Enter a Teams destination.");
-      channels.teams = [{ destination }];
+      const destinations = splitDestinations(document.getElementById("teams-destination").value);
+      if (destinations.length === 0) throw new Error("Enter at least one Teams destination.");
+      channels.teams = destinations.map((destination) => ({ destination }));
     }
     if (emailChecked) {
-      const recipient = document.getElementById("email-destination").value.trim();
-      if (!recipient) throw new Error("Enter an Email recipient.");
-      channels.email = [{ recipient, subject: document.getElementById("subject").value.trim() || null }];
+      const recipients = splitDestinations(document.getElementById("email-destination").value);
+      if (recipients.length === 0) throw new Error("Enter at least one Email recipient.");
+      const subject = document.getElementById("subject").value.trim() || null;
+      channels.email = recipients.map((recipient) => ({ recipient, subject }));
     }
     if (slackChecked) {
-      const destination = document.getElementById("slack-destination").value.trim();
-      if (!destination) throw new Error("Enter a Slack destination.");
-      channels.slack = [{ destination }];
+      const destinations = splitDestinations(document.getElementById("slack-destination").value);
+      if (destinations.length === 0) throw new Error("Enter at least one Slack destination.");
+      channels.slack = destinations.map((destination) => ({ destination }));
     }
 
     if (Object.keys(channels).length === 0) {
@@ -77,7 +92,7 @@
     try {
       const notification = await NotificationApi.createNotification(payload);
       const summary = notification.deliveries
-        .map((d) => `${d.channel}: ${NotificationUi.statusLabel(d.status)}`)
+        .map((d) => `${NotificationUi.channelLabel(d.channel)}: ${NotificationUi.statusLabel(d.status)}`)
         .join(" · ");
       status.textContent = `Sent. ${summary}`;
       status.style.color = "#059669";

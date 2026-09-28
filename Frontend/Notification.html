@@ -522,13 +522,13 @@
               class="field-label"
               for="teams-destination"
             >
-              Teams destination
+              Teams destination(s)
             </label>
 
             <input
               id="teams-destination"
               type="text"
-              placeholder="ops-channel or teammate@example.com"
+              placeholder="ops-channel, teammate@example.com"
             >
           </div>
 
@@ -541,13 +541,13 @@
               class="field-label"
               for="email-destination"
             >
-              Email recipient
+              Email recipient(s)
             </label>
 
             <input
               id="email-destination"
-              type="email"
-              placeholder="teammate@example.com"
+              type="text"
+              placeholder="teammate@example.com, teammate2@example.com"
             >
           </div>
 
@@ -560,13 +560,13 @@
               class="field-label"
               for="slack-destination"
             >
-              Slack destination
+              Slack destination(s)
             </label>
 
             <input
               id="slack-destination"
               type="text"
-              placeholder="#engineering or teammate@example.com"
+              placeholder="#engineering, teammate@example.com"
             >
           </div>
 
@@ -579,7 +579,8 @@
 
           <div class="form-footer">
             <p class="hint">
-              Select at least one destination before sending.
+              Select at least one destination before sending. Separate
+              multiple recipients on the same channel with commas.
             </p>
 
             <button

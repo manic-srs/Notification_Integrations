@@ -619,7 +619,7 @@
             const channels = deliveries
               .map((delivery) =>
                 NotificationUi.escapeHtml(
-                  delivery.channel
+                  NotificationUi.channelLabel(delivery.channel)
                 )
               )
               .join("<br>");

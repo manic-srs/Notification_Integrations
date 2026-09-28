@@ -135,9 +135,19 @@ Copy-Item Backend\.env.example Backend\.env   # edit with real credentials, or l
 docker compose up --build
 ```
 
-Starts MySQL + the backend together, in one command:
+Starts MySQL, the backend and the frontend together, in one command:
 
-- Backend docs: `http://localhost:8000/docs`
+- **Application:** `http://localhost:5500/Login.html`
+- Backend API docs: `http://localhost:8000/docs`
+
+Confirm all three containers actually came up before opening the app:
+```bash
+docker compose ps
+```
+You should see `mysql`, `backend` and `frontend` listed as `running` (mysql
+as `healthy`). If the list comes back empty, or a service is missing, the
+stack isn't actually up yet — re-run `docker compose up --build` and check
+`docker compose logs <service>` for the one that failed to start.
 
 This MySQL is a fresh, empty database living in its own Docker volume,
 separate from any MySQL you run natively — no local MySQL install needed.
@@ -148,15 +158,36 @@ secret — is used exactly as it would be running natively. The backend
 container bind-mounts `Backend/`, so editing the code on your machine still
 hot-reloads it, same as `uvicorn --reload`.
 
-If port 8000 is already taken by something else on your machine, override it
-without editing the compose file — create a `.env` file next to
-`docker-compose.yml` (not `Backend/.env`) with:
+### If you need to change a port
+
+If port 8000, 5500 or 3307 is already taken by something else on your
+machine, override it without editing the compose file — create a `.env`
+file next to `docker-compose.yml` (not `Backend/.env`) with any of:
 ```
 BACKEND_PORT=8001
+FRONTEND_PORT=5501
+MYSQL_ROOT_PASSWORD=your-own-password
 ```
-and the backend docs will be at `http://localhost:8001/docs` instead. See
-`docker-compose.yml` for details, including how to override the MySQL root
-password the same way.
+then run `docker compose up --build` again and use the new port(s) in your
+URLs.
+
+> ⚠️ **Changing `BACKEND_PORT`? You must also update `Frontend/config.js`.**
+> The frontend is a static site baked into an nginx image at *build* time —
+> it does not read `BACKEND_PORT` from your `.env` file at runtime.
+> `Frontend/config.js` hardcodes `window.API_BASE_URL`, so it has to be
+> edited by hand to match whatever port you gave the backend (e.g.
+> `http://localhost:8001`), and the frontend container has to be **rebuilt**
+> for the change to take effect:
+> ```bash
+> docker compose up --build frontend
+> ```
+> A plain `docker compose restart frontend` is **not** enough — the file is
+> already baked into the image, so restarting just serves the old value.
+> Forgetting this step is the most common cause of "Could not reach the
+> backend at http://localhost:XXXX" errors after pulling someone else's
+> changes. Keep `config.js` pointed at the port your team actually uses by
+> default (8000, unless you've agreed on something else) and treat any
+> personal port override as local-only — don't commit it.
 
 Stop everything with `docker compose down` (add `-v` to also delete the
 MySQL data volume and start fresh next time).
@@ -280,6 +311,34 @@ curl -X POST http://localhost:8000/api/notifications \
 With no credentials configured, every channel sends through `MockProvider`
 and returns a successful delivery status immediately.
 
+### Sending to multiple recipients on the same channel
+
+Each channel accepts a **list** of entries, not just one — send to several
+people on the same channel in a single request by adding more entries to
+that channel's array:
+```bash
+curl -X POST http://localhost:8000/api/notifications \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Deploy finished",
+    "message": "Build #42 deployed to prod",
+    "channels": {
+      "teams": [{ "destination": "ops-channel" }, { "destination": "release-channel" }],
+      "slack": [{ "destination": "#engineering" }, { "destination": "@teammate" }],
+      "email": [
+        { "recipient": "team@example.com", "subject": "Deploy done" },
+        { "recipient": "oncall@example.com", "subject": "Deploy done" }
+      ]
+    }
+  }'
+```
+The "Send a notification" page supports this too — enter comma-separated
+destinations (e.g. `ops-channel, release-channel`) in any channel's field
+and the frontend splits them into separate entries before sending, so each
+recipient gets their own delivery record and their own real success/failure
+status, instead of one delivery whose destination is a comma-separated
+string.
+
 ## API summary
 
 | Method | Path | Purpose |
@@ -372,6 +431,9 @@ threading (`tests/test_threading.py`), all against a real MySQL schema.
 | Frontend gets CORS errors calling this API | Set `CORS_ORIGINS` in `Backend/.env` to the frontend's actual origin (or `*` for local development). |
 | Docker: backend can't reach MySQL | Make sure `docker compose up` finished the MySQL healthcheck before the backend started (compose handles this via `depends_on: condition: service_healthy`) — check with `docker compose logs mysql`. |
 | Docker: `Bind for 0.0.0.0:8000 failed: port is already allocated` | Something else on your machine already has port 8000 (check with `docker ps` or `lsof -i :8000`). Set `BACKEND_PORT=8001` (or any free port) in a `.env` file next to `docker-compose.yml` rather than fighting over 8000. |
+| Frontend shows "Could not reach the backend at http://localhost:XXXX" after pulling changes | `Frontend/config.js` is out of sync with your `BACKEND_PORT` — it's a static file baked into the frontend image, so editing it isn't enough on its own. Update the port in `config.js` and run `docker compose up --build frontend` (not just `restart`). See [If you need to change a port](#if-you-need-to-change-a-port). |
+| `docker compose ps` shows nothing (or fewer than 3 services) after `docker compose up` | The stack isn't actually running — Docker Desktop may have restarted, or a previous `docker compose down` tore it down. Re-run `docker compose up --build` and confirm again with `docker compose ps`. |
+| A channel shows "Delivered" but nothing actually arrived | Usually means several comma-separated destinations were sent as one destination string instead of separate entries. Check History for that notification — each recipient should have its own delivery row; if instead one row shows a comma-separated destination, the frontend build predates the multi-recipient fix. |
 
 ## Contributing
 

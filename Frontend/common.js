@@ -94,6 +94,18 @@
     ));
   }
 
+  // Channels are stored/returned upper-cased ("TEAMS", "SLACK", "EMAIL").
+  // Always show the friendly title-cased form in the UI instead, matching
+  // the labels on the Send Notification page's channel selector.
+  function channelLabel(channel) {
+    const known = { TEAMS: "Teams", SLACK: "Slack", EMAIL: "Email" };
+    const raw = String(channel || "");
+    if (!raw) return raw;
+    const key = raw.toUpperCase();
+    if (known[key]) return known[key];
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  }
+
   window.NotificationApi = {
     health: () => apiRequest("/health"),
     createNotification: (payload) =>
@@ -110,5 +122,5 @@
     retryNotification: (id) => apiRequest(`/api/notifications/${id}/retry`, { method: "POST" }),
   };
 
-  window.NotificationUi = { statusClass, statusLabel, overallStatus, formatTime, escapeHtml };
+  window.NotificationUi = { statusClass, statusLabel, overallStatus, formatTime, escapeHtml, channelLabel };
 })();
